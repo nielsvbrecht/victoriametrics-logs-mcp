@@ -10,7 +10,7 @@ import { z } from 'zod';
 
 const server = new McpServer({
   name: 'victoriametrics-logs-mcp',
-  version: '1.0.0',
+  version: '2.0.0',
 });
 
 /**
@@ -81,7 +81,7 @@ server.registerTool(
       content: [
         {
           type: 'text',
-          text: 'VictoriaMetrics Gemini Extension (victoriametrics-logs-mcp). Version 1.0.0. Provides MetricsQL expertise and troubleshooting tools.',
+          text: 'VictoriaMetrics & VictoriaLogs Gemini Extension (victoriametrics-logs-mcp). Version 2.0.0. Provides MetricsQL and LogsQL expertise.',
         },
       ],
     };
