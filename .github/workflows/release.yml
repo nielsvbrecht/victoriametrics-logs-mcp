@@ -55,19 +55,21 @@ jobs:
 
       - name: Test installation (Unix)
         if: runner.os != 'Windows'
+        shell: bash
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
+          set -e
           if [ "${{ runner.os }}" == "Linux" ]; then
             sudo apt-get update && sudo apt-get install -y libsecret-1-0
           fi
           npm install -g @google/gemini-cli
           mkdir -p ~/.gemini
-          # Initialize registry with empty projects object to avoid TypeErrors
+          # Initialize registry with empty projects object
           echo '{"projects":{}}' > ~/.gemini/projects.json
           echo '{"config":{}}' > ~/.gemini/config.json
-          gemini --version || true
-          gemini extensions link . --consent || true
+          gemini --version
+          gemini extensions link . --consent
           gemini extensions list | grep "victoriametrics-logs-mcp"
 
       - name: Test installation (Windows)
