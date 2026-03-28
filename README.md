@@ -7,7 +7,8 @@ A specialized Gemini CLI extension for interacting with VictoriaMetrics and Vict
 - **MCP Integration**: Seamlessly connects to community and custom MCP servers for monitoring and logging.
 - **Custom Skills**: 
   - `metrics-expert`: Specialized in PromQL/MetricsQL and query optimization.
-  - `troubleshooter`: Focused on VictoriaMetrics health, ingestion, and storage diagnostics.
+  - `logs-expert`: Specialized in LogsQL, log filtering, and full-text search.
+  - `troubleshooter`: Focused on health, ingestion, and storage diagnostics for both metrics and logs.
 - **VictoriaLogs Support**: Full LogsQL integration for log retrieval, statistics, and analysis.
 - **Slash Commands**:
   - `/vm-status`: Quick health report and status summary.
