@@ -28,6 +28,12 @@ jobs:
       - name: Build extension
         run: npm run build
 
+      - name: Test installation in gemini-cli
+        run: |
+          npm install -g @google/gemini-cli
+          gemini extensions link .
+          gemini extensions list | grep "victoriametrics-logs-mcp"
+
       - name: Package extension (darwin)
         run: |
           tar -czvf ${{ github.ref_name }}.darwin.victoriametrics-logs-mcp.tar.gz \
