@@ -58,8 +58,13 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            sudo apt-get update && sudo apt-get install -y libsecret-1-0
+          fi
           npm install -g @google/gemini-cli
           mkdir -p ~/.gemini
+          echo '{}' > ~/.gemini/projects.json
+          echo '{}' > ~/.gemini/config.json
           gemini extensions link . --consent
           gemini extensions list | grep "victoriametrics-logs-mcp"
 
@@ -72,6 +77,8 @@ jobs:
           npm install -g @google/gemini-cli
           $geminiDir = [System.IO.Path]::Combine($env:USERPROFILE, ".gemini")
           if (!(Test-Path $geminiDir)) { New-Item -ItemType Directory -Path $geminiDir }
+          "{}" | Out-File -FilePath (Join-Path $geminiDir "projects.json") -Encoding utf8
+          "{}" | Out-File -FilePath (Join-Path $geminiDir "config.json") -Encoding utf8
           gemini extensions link . --consent
           $exts = gemini extensions list
           if ($exts -match "victoriametrics-logs-mcp") {
