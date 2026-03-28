@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.7] - 2026-03-28
+
+### Changed
+- **CI Stability**: Switched to `npx` and pinned `gemini-cli` to `0.35.1` for all test installation steps across platforms to ensure a stable and consistent testing environment.
+
 ## [2.2.6] - 2026-03-28
 
 ### Fixed
