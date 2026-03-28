@@ -20845,7 +20845,7 @@ var StdioServerTransport = class {
 
 // index.js
 var server = new McpServer({
-  name: "vm-mcp",
+  name: "victoriametrics-logs-mcp",
   version: "1.0.0"
 });
 server.registerTool(
@@ -20859,7 +20859,7 @@ server.registerTool(
       content: [
         {
           type: "text",
-          text: "VictoriaMetrics Gemini Extension (vm-mcp). Version 1.0.0. Provides MetricsQL expertise and troubleshooting tools."
+          text: "VictoriaMetrics Gemini Extension (victoriametrics-logs-mcp). Version 1.0.0. Provides MetricsQL expertise and troubleshooting tools."
         }
       ]
     };
@@ -20868,18 +20868,20 @@ server.registerTool(
 server.registerTool(
   "check_config",
   {
-    description: "Checks if the VictoriaMetrics configuration is set in environment variables.",
+    description: "Checks if the VictoriaMetrics and VictoriaLogs configurations are set in environment variables.",
     inputSchema: external_exports.object({}).shape
   },
   async () => {
-    const url = process.env.VM_INSTANCE_ENTRYPOINT || "http://localhost:8428";
+    const vm_url = process.env.VM_INSTANCE_ENTRYPOINT || "http://localhost:8428";
+    const vl_url = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
     const type = process.env.VM_INSTANCE_TYPE || "single";
     return {
       content: [
         {
           type: "text",
           text: `Configuration Status:
-URL: ${url}
+VictoriaMetrics URL: ${vm_url}
+VictoriaLogs URL: ${vl_url}
 Type: ${type}`
         }
       ]
@@ -20905,6 +20907,149 @@ server.registerTool(
     } catch (error2) {
       return {
         content: [{ type: "text", text: `Error executing query: ${error2.message}` }],
+        isError: true
+      };
+    }
+  }
+);
+server.registerTool(
+  "logs_query",
+  {
+    description: "Execute a LogsQL query against VictoriaLogs.",
+    inputSchema: external_exports.object({
+      query: external_exports.string().describe("The LogsQL query expression."),
+      limit: external_exports.number().optional().describe("Maximum number of log entries to return."),
+      start: external_exports.string().optional().describe("Start time (RFC3339, Unix timestamp, or relative duration like 5m)."),
+      end: external_exports.string().optional().describe("End time.")
+    })
+  },
+  async ({ query, limit, start, end }) => {
+    const entrypoint = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
+    const params = new URLSearchParams({ query });
+    if (limit) params.append("limit", limit.toString());
+    if (start) params.append("start", start);
+    if (end) params.append("end", end);
+    try {
+      const response = await fetch(`${entrypoint}/select/logsql/query?${params.toString()}`);
+      const text = await response.text();
+      return {
+        content: [{ type: "text", text }]
+      };
+    } catch (error2) {
+      return {
+        content: [{ type: "text", text: `Error executing logs query: ${error2.message}` }],
+        isError: true
+      };
+    }
+  }
+);
+server.registerTool(
+  "logs_list_field_names",
+  {
+    description: "List all field names in VictoriaLogs.",
+    inputSchema: external_exports.object({
+      query: external_exports.string().optional().describe("Optional LogsQL query to filter fields.")
+    })
+  },
+  async ({ query }) => {
+    const entrypoint = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
+    const params = new URLSearchParams();
+    if (query) params.append("query", query);
+    try {
+      const response = await fetch(`${entrypoint}/select/logsql/field_names?${params.toString()}`);
+      const data = await response.json();
+      return {
+        content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
+      };
+    } catch (error2) {
+      return {
+        content: [{ type: "text", text: `Error listing fields: ${error2.message}` }],
+        isError: true
+      };
+    }
+  }
+);
+server.registerTool(
+  "logs_list_field_values",
+  {
+    description: "List unique values for a specific field in VictoriaLogs.",
+    inputSchema: external_exports.object({
+      field: external_exports.string().describe("The field name to list values for."),
+      query: external_exports.string().optional().describe("Optional LogsQL query to filter values."),
+      limit: external_exports.number().optional().describe("Maximum number of values to return.")
+    })
+  },
+  async ({ field, query, limit }) => {
+    const entrypoint = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
+    const params = new URLSearchParams({ field });
+    if (query) params.append("query", query);
+    if (limit) params.append("limit", limit.toString());
+    try {
+      const response = await fetch(`${entrypoint}/select/logsql/field_values?${params.toString()}`);
+      const data = await response.json();
+      return {
+        content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
+      };
+    } catch (error2) {
+      return {
+        content: [{ type: "text", text: `Error listing field values: ${error2.message}` }],
+        isError: true
+      };
+    }
+  }
+);
+server.registerTool(
+  "logs_hits",
+  {
+    description: "Get statistics on the number of logs matching a query over time.",
+    inputSchema: external_exports.object({
+      query: external_exports.string().describe("LogsQL query."),
+      step: external_exports.string().describe("The interval between data points (e.g., 1m, 1h)."),
+      start: external_exports.string().optional().describe("Start time."),
+      end: external_exports.string().optional().describe("End time.")
+    })
+  },
+  async ({ query, step, start, end }) => {
+    const entrypoint = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
+    const params = new URLSearchParams({ query, step });
+    if (start) params.append("start", start);
+    if (end) params.append("end", end);
+    try {
+      const response = await fetch(`${entrypoint}/select/logsql/hits?${params.toString()}`);
+      const data = await response.json();
+      return {
+        content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
+      };
+    } catch (error2) {
+      return {
+        content: [{ type: "text", text: `Error getting hits: ${error2.message}` }],
+        isError: true
+      };
+    }
+  }
+);
+server.registerTool(
+  "logs_status",
+  {
+    description: "Check the health and status of the VictoriaLogs instance.",
+    inputSchema: external_exports.object({}).shape
+  },
+  async () => {
+    const entrypoint = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
+    try {
+      const healthResponse = await fetch(`${entrypoint}/health`);
+      const health = await healthResponse.text();
+      return {
+        content: [
+          {
+            type: "text",
+            text: `VictoriaLogs Health: ${health}`
+          }
+        ]
+      };
+    } catch (error2) {
+      return {
+        content: [{ type: "text", text: `Error checking logs status: ${error2.message}` }],
         isError: true
       };
     }

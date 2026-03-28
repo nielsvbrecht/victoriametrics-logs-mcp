@@ -1,5 +1,5 @@
 {
-  "name": "vm-mcp",
+  "name": "victoriametrics-logs-mcp",
   "version": "1.1.0",
   "description": "VictoriaMetrics extension for Gemini CLI",
   "type": "module",

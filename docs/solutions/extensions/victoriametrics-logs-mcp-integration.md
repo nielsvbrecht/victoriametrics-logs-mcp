@@ -1,4 +1,4 @@
-# VictoriaMetrics MCP Integration (vm-mcp)
+# VictoriaMetrics MCP Integration (victoriametrics-logs-mcp)
 
 ## Problem
 Building a Gemini CLI extension to interact with VictoriaMetrics via the Model Context Protocol (MCP).

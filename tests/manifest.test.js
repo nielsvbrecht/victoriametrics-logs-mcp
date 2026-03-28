@@ -8,7 +8,7 @@ test('gemini-extension.json is valid', () => {
   assert.ok(fs.existsSync(manifestPath), 'manifest file exists');
   
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-  assert.strictEqual(manifest.name, 'vm-mcp', 'manifest name matches');
+  assert.strictEqual(manifest.name, 'victoriametrics-logs-mcp', 'manifest name matches');
   assert.ok(manifest.mcpServers, 'mcpServers are defined');
   assert.ok(manifest.mcpServers.victoriametrics, 'victoriametrics server is defined');
   assert.ok(manifest.mcpServers.vmMcpInfo, 'vmMcpInfo server is defined');

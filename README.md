@@ -1,31 +1,32 @@
-# VictoriaMetrics Gemini Extension (vm-mcp)
+# VictoriaMetrics & VictoriaLogs Gemini Extension (victoriametrics-logs-mcp)
 
-A specialized Gemini CLI extension for interacting with VictoriaMetrics instances. This extension provides expert-level MetricsQL support, health monitoring, and troubleshooting tools.
+A specialized Gemini CLI extension for interacting with VictoriaMetrics and VictoriaLogs instances. This extension provides expert-level MetricsQL and LogsQL support, health monitoring, and troubleshooting tools.
 
 ## Features
 
-- **MCP Integration**: Seamlessly connects to the community `mcp-victoriametrics` server.
+- **MCP Integration**: Seamlessly connects to community and custom MCP servers for monitoring and logging.
 - **Custom Skills**: 
   - `metrics-expert`: Specialized in PromQL/MetricsQL and query optimization.
   - `troubleshooter`: Focused on VictoriaMetrics health, ingestion, and storage diagnostics.
+- **VictoriaLogs Support**: Full LogsQL integration for log retrieval, statistics, and analysis.
 - **Slash Commands**:
   - `/vm-status`: Quick health report and status summary.
   - `/vm-query <query>`: Execute a query with AI-assisted interpretation.
-- **Persistent Context**: `GEMINI.md` provides foundational knowledge about VictoriaMetrics architecture and best practices.
+- **Persistent Context**: `GEMINI.md` provides foundational knowledge about VictoriaMetrics and VictoriaLogs architecture and best practices.
 
 ## Installation
 
 ### For Users (from GitHub)
 Run the following command to install the extension directly from the repository:
 ```bash
-gemini extensions install https://github.com/nielsvbrecht/vm-mcp.git
+gemini extensions install https://github.com/nielsvbrecht/victoriametrics-logs-mcp.git
 ```
 
 ### For Developers (Local)
 1.  **Clone the repository**:
     ```bash
-    git clone https://github.com/nielsvbrecht/vm-mcp.git
-    cd vm-mcp
+    git clone https://github.com/nielsvbrecht/victoriametrics-logs-mcp.git
+    cd victoriametrics-logs-mcp
     ```
 
 2.  **Install dependencies and build**:
@@ -39,9 +40,10 @@ gemini extensions install https://github.com/nielsvbrecht/vm-mcp.git
     gemini extensions link .
     ```
 
-4.  **Configure VictoriaMetrics**:
-    By default, the extension looks for VictoriaMetrics at `http://localhost:8428`. You can customize this by editing `gemini-extension.json` or setting environment variables:
+4.  **Configure Instances**:
+    By default, the extension looks for VictoriaMetrics at `http://localhost:8428` and VictoriaLogs at `http://localhost:9428`. You can customize this by editing `gemini-extension.json` or setting environment variables:
     - `VM_INSTANCE_ENTRYPOINT`: URL of your VictoriaMetrics instance.
+    - `VL_INSTANCE_ENTRYPOINT`: URL of your VictoriaLogs instance.
     - `VM_INSTANCE_TYPE`: `single` or `cluster`.
 
 ## Usage
@@ -54,7 +56,8 @@ Once linked, start a new Gemini CLI session. You can use the following commands 
 
 ### Tools
 - `victoriametrics__query`: Execute raw MetricsQL.
-- `victoriametrics__list_metrics`: Explore available metrics.
+- `vmMcpInfo__logs_query`: Execute raw LogsQL.
+- `vmMcpInfo__logs_hits`: Get log statistics over time.
 - `vmMcpInfo__check_config`: Verify your local configuration.
 
 ### Skills
