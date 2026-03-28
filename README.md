@@ -56,9 +56,18 @@ Once linked, start a new Gemini CLI session. You can use the following commands 
 
 ### Tools
 - `victoriametrics__query`: Execute raw MetricsQL.
-- `vmMcpInfo__logs_query`: Execute raw LogsQL.
-- `vmMcpInfo__logs_hits`: Get log statistics over time.
+- `vmMcpInfo__logs_query`: Execute LogsQL queries to retrieve log entries.
+- `vmMcpInfo__logs_hits`: Get log statistics and frequency over time.
+- `vmMcpInfo__logs_list_field_names`: Discover available log fields.
+- `vmMcpInfo__logs_list_field_values`: Explore unique values for a specific log field (e.g., `level`, `app`).
+- `vmMcpInfo__logs_status`: Check the health of your VictoriaLogs instance.
 - `vmMcpInfo__check_config`: Verify your local configuration.
+
+### Examples
+- **Logs Query**: `vmMcpInfo__logs_query(query='error AND app="api"', limit=20)`
+- **Log Hits (Stats)**: `vmMcpInfo__logs_hits(query='level="error"', step='1h')`
+- **List Log Fields**: `vmMcpInfo__logs_list_field_names()`
+- **List Field Values**: `vmMcpInfo__logs_list_field_values(field='host')`
 
 ### Skills
 The extension's skills are automatically available. You can also explicitly activate them:
