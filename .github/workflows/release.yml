@@ -11,6 +11,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   GEMINI_STORAGE_BACKEND: "file"
   GEMINI_CONFIG_DIR: ${{ github.workspace }}/.gemini_config
+  GEMINI_NO_HISTORY: "true"
 
 jobs:
   build-and-test:
@@ -67,7 +68,7 @@ jobs:
           fi
           npm install -g @google/gemini-cli
           mkdir -p "$GEMINI_CONFIG_DIR"
-          echo '{"projects":{},"version":1}' > "$GEMINI_CONFIG_DIR/projects.json"
+          echo '{"projects":{},"version":1,"activeProjectId":null}' > "$GEMINI_CONFIG_DIR/projects.json"
           echo '{"config":{},"version":1}' > "$GEMINI_CONFIG_DIR/config.json"
           
           # Run from a neutral directory to avoid project detection crashes
@@ -88,7 +89,7 @@ jobs:
         run: |
           npm install -g @google/gemini-cli
           if (!(Test-Path $env:GEMINI_CONFIG_DIR)) { New-Item -ItemType Directory -Path $env:GEMINI_CONFIG_DIR }
-          '{"projects":{},"version":1}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "projects.json") -Encoding utf8
+          '{"projects":{},"version":1,"activeProjectId":null}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "projects.json") -Encoding utf8
           '{"config":{},"version":1}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "config.json") -Encoding utf8
           
           # Run from a neutral directory
