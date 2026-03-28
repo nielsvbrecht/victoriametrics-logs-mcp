@@ -14,6 +14,7 @@ jobs:
   build-and-test:
     name: Build & Test (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
+    environment: gemini
     strategy:
       matrix:
         include:
@@ -54,6 +55,8 @@ jobs:
 
       - name: Test installation (Unix)
         if: runner.os != 'Windows'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           npm install -g @google/gemini-cli
           gemini extensions link .
@@ -62,6 +65,8 @@ jobs:
       - name: Test installation (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           npm install -g @google/gemini-cli
           gemini extensions link .
