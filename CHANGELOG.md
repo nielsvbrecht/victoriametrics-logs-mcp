@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-03-28
+
+### Added
+- **CI Environment**: Automatic creation of `~/.gemini` directory in CI to prevent `projects.json` errors.
+
+### Fixed
+- **Version Sync**: Synchronized `package.json`, `gemini-extension.json`, and `index.js` with `version.txt`.
+
 ## [2.0.9] - 2026-03-28
 
 ### Fixed

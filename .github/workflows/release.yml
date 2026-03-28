@@ -59,6 +59,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           npm install -g @google/gemini-cli
+          mkdir -p ~/.gemini
           gemini extensions link . --consent
           gemini extensions list | grep "victoriametrics-logs-mcp"
 
@@ -69,6 +70,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           npm install -g @google/gemini-cli
+          $geminiDir = [System.IO.Path]::Combine($env:USERPROFILE, ".gemini")
+          if (!(Test-Path $geminiDir)) { New-Item -ItemType Directory -Path $geminiDir }
           gemini extensions link . --consent
           $exts = gemini extensions list
           if ($exts -match "victoriametrics-logs-mcp") {
