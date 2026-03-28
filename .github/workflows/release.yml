@@ -62,6 +62,24 @@ jobs:
       - name: Build extension
         run: npm run build
 
+      - name: Package extension (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          tar -czvf ${{ matrix.platform }}.victoriametrics-logs-mcp.tar.gz \
+            gemini-extension.json \
+            package.json \
+            README.md \
+            GEMINI.md \
+            dist/ \
+            commands/ \
+            skills/
+
+      - name: Package extension (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path gemini-extension.json, package.json, README.md, GEMINI.md, dist, commands, skills -DestinationPath win32.victoriametrics-logs-mcp.zip
+
       - name: Test installation (Unix)
         if: runner.os != 'Windows'
         id: install_unix
@@ -80,15 +98,14 @@ jobs:
           echo '{"projects":{},"version":1,"activeProjectId":null}' > "$GEMINI_CONFIG_DIR/projects.json"
           echo '{"config":{},"version":1}' > "$GEMINI_CONFIG_DIR/config.json"
           
-          echo "Testing with npx @google/gemini-cli@0.35.2"
-          # Use -v for diagnostic check
+          echo "Testing installation from local package"
           npx -y @google/gemini-cli@0.35.2 -v
-          npx -y @google/gemini-cli@0.35.2 extensions link . --consent
+          npx -y @google/gemini-cli@0.35.2 extensions install "./${{ matrix.platform }}.victoriametrics-logs-mcp.tar.gz" --consent
           npx -y @google/gemini-cli@0.35.2 extensions list > extensions.txt
           cat extensions.txt
           
           if grep -q "victoriametrics-logs-mcp" extensions.txt; then
-            echo "Extension successfully linked"
+            echo "Extension successfully installed from local package"
           else
             echo "Error: Extension not found in list"
             exit 1
@@ -107,13 +124,13 @@ jobs:
           '{"projects":{},"version":1,"activeProjectId":null}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "projects.json") -Encoding utf8
           '{"config":{},"version":1}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "config.json") -Encoding utf8
           
-          echo "Testing with npx @google/gemini-cli@0.35.2"
+          echo "Testing installation from local package"
           npx -y @google/gemini-cli@0.35.2 -v
-          npx -y @google/gemini-cli@0.35.2 extensions link . --consent
+          npx -y @google/gemini-cli@0.35.2 extensions install "./win32.victoriametrics-logs-mcp.zip" --consent
           $exts = npx -y @google/gemini-cli@0.35.2 extensions list
           echo $exts
           if ($exts -match "victoriametrics-logs-mcp") {
-            echo "Extension found"
+            echo "Extension installed successfully"
           } else {
             echo "Extension not found"
             exit 1
@@ -131,24 +148,6 @@ jobs:
             echo "One or more tests failed."
             exit 1
           fi
-
-      - name: Package extension (Unix)
-        if: runner.os != 'Windows'
-        run: |
-          tar -czvf ${{ matrix.platform }}.victoriametrics-logs-mcp.tar.gz \
-            gemini-extension.json \
-            package.json \
-            README.md \
-            GEMINI.md \
-            dist/ \
-            commands/ \
-            skills/
-
-      - name: Package extension (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Compress-Archive -Path gemini-extension.json, package.json, README.md, GEMINI.md, dist, commands, skills -DestinationPath win32.victoriametrics-logs-mcp.zip
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

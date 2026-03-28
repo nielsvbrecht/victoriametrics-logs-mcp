@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1] - 2026-03-28
+
+### Changed
+- **CI Installation Test**: Updated the pipeline to test installation directly from packaged artifacts (`.tar.gz` and `.zip`) using `gemini extensions install`, ensuring that both the packaging logic and the installation process are verified on all platforms.
+
 ## [2.3.0] - 2026-03-28
 
 ### Changed
