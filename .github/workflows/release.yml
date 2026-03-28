@@ -107,15 +107,18 @@ jobs:
           ./node_modules/.bin/gemini -v
           ./node_modules/.bin/gemini extensions link "$GITHUB_WORKSPACE" --consent || true
           
-          echo "Verifying extension registry"
-          ./node_modules/.bin/gemini extensions list -o json > extensions.json || true
-          cat extensions.json
-          
-          # Use Node.js for reliable string checking
-          if node -e "const fs=require('fs'); const c=fs.readFileSync('extensions.json','utf8'); if(!c.includes('victoriametrics-logs-mcp')) process.exit(1);"; then
-            echo "Extension successfully linked"
+          echo "Verifying extension registry file directly"
+          REGISTRY="$GEMINI_CLI_HOME/.gemini/projects.json"
+          if [ -f "$REGISTRY" ]; then
+            cat "$REGISTRY"
+            if grep -q "victoriametrics-logs-mcp" "$REGISTRY"; then
+              echo "Extension successfully registered in projects.json"
+            else
+              echo "Error: Extension not found in projects.json"
+              exit 1
+            fi
           else
-            echo "Error: Extension not found in registry"
+            echo "Error: Registry file not found at $REGISTRY"
             exit 1
           fi
 
@@ -143,15 +146,19 @@ jobs:
           try { & $BIN -v } catch {}
           try { & $BIN extensions link "$env:GITHUB_WORKSPACE" --consent } catch {}
           
-          echo "Verifying extension registry"
-          try { & $BIN extensions list -o json | Out-File -FilePath extensions.json -Encoding utf8 } catch {}
-          
-          # Use Node.js for reliable string checking
-          $checkScript = "const fs=require('fs'); const c=fs.readFileSync('extensions.json','utf8'); if(!c.includes('victoriametrics-logs-mcp')) process.exit(1);"
-          if (node -e "$checkScript") {
-            echo "Extension successfully linked"
+          echo "Verifying extension registry file directly"
+          $registryPath = Join-Path $geminiDir "projects.json"
+          if (Test-Path $registryPath) {
+            $content = Get-Content $registryPath -Raw
+            echo $content
+            if ($content -match "victoriametrics-logs-mcp") {
+              echo "Extension successfully registered in projects.json"
+            } else {
+              echo "Error: Extension not found in projects.json"
+              exit 1
+            }
           } else {
-            echo "Error: Extension not found in registry"
+            echo "Error: Registry file not found at $registryPath"
             exit 1
           }
 
