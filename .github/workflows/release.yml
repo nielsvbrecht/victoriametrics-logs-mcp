@@ -64,15 +64,22 @@ jobs:
         shell: bash
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DEBUG: "true"
         run: |
           set -e
           if [ "${{ runner.os }}" == "Linux" ]; then
             sudo apt-get update && sudo apt-get install -y libsecret-1-0
           fi
-          npm install -g @google/gemini-cli@latest
+          # Pin to a known stable version
+          npm install -g @google/gemini-cli@0.35.2
           mkdir -p "$GEMINI_CONFIG_DIR"
+          # Initialize registry with a more complete structure
           echo '{"projects":{},"version":1,"activeProjectId":null}' > "$GEMINI_CONFIG_DIR/projects.json"
           echo '{"config":{},"version":1}' > "$GEMINI_CONFIG_DIR/config.json"
+          
+          echo "Checking config files:"
+          cat "$GEMINI_CONFIG_DIR/projects.json"
+          cat "$GEMINI_CONFIG_DIR/config.json"
           
           # Run from a neutral directory to avoid project detection crashes
           mkdir -p ../test-dir
@@ -89,8 +96,9 @@ jobs:
         shell: pwsh
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DEBUG: "true"
         run: |
-          npm install -g @google/gemini-cli
+          npm install -g @google/gemini-cli@0.35.2
           if (!(Test-Path $env:GEMINI_CONFIG_DIR)) { New-Item -ItemType Directory -Path $env:GEMINI_CONFIG_DIR }
           '{"projects":{},"version":1,"activeProjectId":null}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "projects.json") -Encoding utf8
           '{"config":{},"version":1}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "config.json") -Encoding utf8

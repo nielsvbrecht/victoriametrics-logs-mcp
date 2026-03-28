@@ -1,6 +1,6 @@
 {
   "name": "victoriametrics-logs-mcp",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "description": "VictoriaMetrics extension for Gemini CLI",
   "mcpServers": {
     "victoriametrics": {
