@@ -106,7 +106,8 @@ jobs:
           
           echo "Testing installation from local package"
           $BIN -v
-          $BIN extensions install "$GITHUB_WORKSPACE/${{ matrix.platform }}.victoriametrics-logs-mcp.tar.gz" --consent
+          # Use file:// protocol for local installation
+          $BIN extensions install "file://$GITHUB_WORKSPACE/${{ matrix.platform }}.victoriametrics-logs-mcp.tar.gz" --consent
           exts=$($BIN extensions list)
           echo "$exts"
           
@@ -138,7 +139,7 @@ jobs:
           
           echo "Testing installation from local package"
           & $BIN -v
-          $packagePath = Join-Path $env:GITHUB_WORKSPACE "win32.victoriametrics-logs-mcp.zip"
+          $packagePath = "file://" + (Join-Path $env:GITHUB_WORKSPACE "win32.victoriametrics-logs-mcp.zip").Replace("\", "/")
           & $BIN extensions install "$packagePath" --consent
           $exts = & $BIN extensions list
           echo $exts
