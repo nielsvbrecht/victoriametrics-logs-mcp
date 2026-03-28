@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*'
+    paths:
+      - 'version.txt'
 
 jobs:
   release:
@@ -28,7 +30,7 @@ jobs:
 
       - name: Package extension (darwin)
         run: |
-          tar -czvf ${{ github.ref_name }}.darwin.vm-mcp.tar.gz \
+          tar -czvf ${{ github.ref_name }}.darwin.victoriametrics-logs-mcp.tar.gz \
             gemini-extension.json \
             package.json \
             README.md \
@@ -39,7 +41,7 @@ jobs:
 
       - name: Package extension (linux)
         run: |
-          tar -czvf ${{ github.ref_name }}.linux.vm-mcp.tar.gz \
+          tar -czvf ${{ github.ref_name }}.linux.victoriametrics-logs-mcp.tar.gz \
             gemini-extension.json \
             package.json \
             README.md \
@@ -50,7 +52,7 @@ jobs:
 
       - name: Package extension (win32)
         run: |
-          zip -r ${{ github.ref_name }}.win32.vm-mcp.zip \
+          zip -r ${{ github.ref_name }}.win32.victoriametrics-logs-mcp.zip \
             gemini-extension.json \
             package.json \
             README.md \
@@ -63,9 +65,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ github.ref_name }}.darwin.vm-mcp.tar.gz
-            ${{ github.ref_name }}.linux.vm-mcp.tar.gz
-            ${{ github.ref_name }}.win32.vm-mcp.zip
+            ${{ github.ref_name }}.darwin.victoriametrics-logs-mcp.tar.gz
+            ${{ github.ref_name }}.linux.victoriametrics-logs-mcp.tar.gz
+            ${{ github.ref_name }}.win32.victoriametrics-logs-mcp.zip
           generate_release_notes: true
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}', github.sha) }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
