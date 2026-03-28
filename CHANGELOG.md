@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.6] - 2026-03-28
+
+### Fixed
+- **CI Stability**: Fixed `GEMINI_CLI_HOME` path to avoid double-nested configuration directories. Switched back to `extensions link` for local installation testing to avoid archive extraction issues in older CLI versions.
+
 ## [2.3.5] - 2026-03-28
 
 ### Fixed
