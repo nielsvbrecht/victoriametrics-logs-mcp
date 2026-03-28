@@ -75,14 +75,11 @@ jobs:
           echo '{"projects":{},"version":1,"activeProjectId":null}' > "$GEMINI_CONFIG_DIR/projects.json"
           echo '{"config":{},"version":1}' > "$GEMINI_CONFIG_DIR/config.json"
           
-          # Run from a neutral directory
-          mkdir -p ../test-dir
-          cd ../test-dir
-          
           echo "Testing with npx @google/gemini-cli@0.35.2"
-          npx -y @google/gemini-cli@0.35.2 --version --headless
-          npx -y @google/gemini-cli@0.35.2 extensions link "$GITHUB_WORKSPACE" --consent --headless
-          npx -y @google/gemini-cli@0.35.2 extensions list --headless > extensions.txt
+          # Use -p "" for non-interactive mode instead of --headless
+          npx -y @google/gemini-cli@0.35.2 -v
+          npx -y @google/gemini-cli@0.35.2 extensions link . --consent
+          npx -y @google/gemini-cli@0.35.2 extensions list > extensions.txt
           cat extensions.txt
           
           if grep -q "victoriametrics-logs-mcp" extensions.txt; then
@@ -103,14 +100,10 @@ jobs:
           '{"projects":{},"version":1,"activeProjectId":null}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "projects.json") -Encoding utf8
           '{"config":{},"version":1}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "config.json") -Encoding utf8
           
-          # Run from a neutral directory
-          New-Item -ItemType Directory -Path ../test-dir -Force
-          Set-Location ../test-dir
-          
           echo "Testing with npx @google/gemini-cli@0.35.2"
-          npx -y @google/gemini-cli@0.35.2 --version --headless
-          npx -y @google/gemini-cli@0.35.2 extensions link "$env:GITHUB_WORKSPACE" --consent --headless
-          $exts = npx -y @google/gemini-cli@0.35.2 extensions list --headless
+          npx -y @google/gemini-cli@0.35.2 -v
+          npx -y @google/gemini-cli@0.35.2 extensions link . --consent
+          $exts = npx -y @google/gemini-cli@0.35.2 extensions list
           echo $exts
           if ($exts -match "victoriametrics-logs-mcp") {
             echo "Extension found"
