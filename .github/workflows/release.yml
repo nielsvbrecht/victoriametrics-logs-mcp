@@ -59,7 +59,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           npm install -g @google/gemini-cli
-          gemini extensions link .
+          gemini extensions link . --yes
           gemini extensions list | grep "victoriametrics-logs-mcp"
 
       - name: Test installation (Windows)
@@ -69,7 +69,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           npm install -g @google/gemini-cli
-          gemini extensions link .
+          gemini extensions link . --yes
           $exts = gemini extensions list
           if ($exts -match "victoriametrics-logs-mcp") {
             echo "Extension found"
