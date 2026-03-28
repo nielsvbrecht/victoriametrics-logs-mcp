@@ -73,9 +73,12 @@ jobs:
           # Run from a neutral directory to avoid project detection crashes
           mkdir -p ../test-dir
           cd ../test-dir
-          gemini --version
+          gemini --version || true
           gemini extensions link "$GITHUB_WORKSPACE" --consent || true
-          gemini extensions list | grep "victoriametrics-logs-mcp"
+          # Capture list output even if it crashes at the end
+          gemini extensions list > extensions.txt || true
+          cat extensions.txt
+          grep "victoriametrics-logs-mcp" extensions.txt
 
       - name: Test installation (Windows)
         if: runner.os == 'Windows'
@@ -93,7 +96,9 @@ jobs:
           Set-Location ../test-dir
           try { gemini --version } catch {}
           try { gemini extensions link "$env:GITHUB_WORKSPACE" --consent } catch {}
-          $exts = gemini extensions list
+          $exts = ""
+          try { $exts = gemini extensions list } catch {}
+          echo $exts
           if ($exts -match "victoriametrics-logs-mcp") {
             echo "Extension found"
           } else {
