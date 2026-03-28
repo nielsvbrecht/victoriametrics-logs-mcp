@@ -10,6 +10,7 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   GEMINI_STORAGE_BACKEND: "file"
+  GEMINI_CONFIG_DIR: ${{ github.workspace }}/.gemini_config
 
 jobs:
   build-and-test:
@@ -65,12 +66,13 @@ jobs:
             sudo apt-get update && sudo apt-get install -y libsecret-1-0
           fi
           npm install -g @google/gemini-cli
-          mkdir -p ~/.gemini
-          # Initialize registry with empty projects object
-          echo '{"projects":{}}' > ~/.gemini/projects.json
-          echo '{"config":{}}' > ~/.gemini/config.json
+          mkdir -p "$GEMINI_CONFIG_DIR"
+          # Initialize registry with a more complete structure
+          echo '{"projects":{},"version":1}' > "$GEMINI_CONFIG_DIR/projects.json"
+          echo '{"config":{},"version":1}' > "$GEMINI_CONFIG_DIR/config.json"
           gemini --version
-          gemini extensions link . --consent
+          # Use || true to ignore the crash at the end of link command
+          gemini extensions link . --consent || true
           gemini extensions list | grep "victoriametrics-logs-mcp"
 
       - name: Test installation (Windows)
@@ -80,10 +82,9 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           npm install -g @google/gemini-cli
-          $geminiDir = [System.IO.Path]::Combine($env:USERPROFILE, ".gemini")
-          if (!(Test-Path $geminiDir)) { New-Item -ItemType Directory -Path $geminiDir }
-          '{"projects":{}}' | Out-File -FilePath (Join-Path $geminiDir "projects.json") -Encoding utf8
-          '{"config":{}}' | Out-File -FilePath (Join-Path $geminiDir "config.json") -Encoding utf8
+          if (!(Test-Path $env:GEMINI_CONFIG_DIR)) { New-Item -ItemType Directory -Path $env:GEMINI_CONFIG_DIR }
+          '{"projects":{},"version":1}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "projects.json") -Encoding utf8
+          '{"config":{},"version":1}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "config.json") -Encoding utf8
           try { gemini --version } catch {}
           try { gemini extensions link . --consent } catch {}
           $exts = gemini extensions list
