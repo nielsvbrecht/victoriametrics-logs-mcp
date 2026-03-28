@@ -20848,6 +20848,45 @@ var server = new McpServer({
   name: "victoriametrics-logs-mcp",
   version: "1.0.0"
 });
+function getVmEntrypoint() {
+  const url = process.env.VM_INSTANCE_ENTRYPOINT || "http://localhost:8428";
+  validateUrl(url);
+  return url.endsWith("/") ? url.slice(0, -1) : url;
+}
+function getVlEntrypoint() {
+  const url = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
+  validateUrl(url);
+  return url.endsWith("/") ? url.slice(0, -1) : url;
+}
+function validateUrl(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      throw new Error(`Invalid protocol: ${parsed.protocol}. Only http and https are allowed.`);
+    }
+  } catch (error2) {
+    throw new Error(`Invalid instance entrypoint URL: ${url}. ${error2.message}`);
+  }
+}
+async function fetchWithTimeout(url, timeout = 3e4) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(id);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+    }
+    return response;
+  } catch (error2) {
+    clearTimeout(id);
+    if (error2.name === "AbortError") {
+      throw new Error(`Request timed out after ${timeout}ms`);
+    }
+    throw error2;
+  }
+}
 server.registerTool(
   "get_extension_info",
   {
@@ -20872,20 +20911,27 @@ server.registerTool(
     inputSchema: external_exports.object({}).shape
   },
   async () => {
-    const vm_url = process.env.VM_INSTANCE_ENTRYPOINT || "http://localhost:8428";
-    const vl_url = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
-    const type = process.env.VM_INSTANCE_TYPE || "single";
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Configuration Status:
+    try {
+      const vm_url = getVmEntrypoint();
+      const vl_url = getVlEntrypoint();
+      const type = process.env.VM_INSTANCE_TYPE || "single";
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Configuration Status:
 VictoriaMetrics URL: ${vm_url}
 VictoriaLogs URL: ${vl_url}
 Type: ${type}`
-        }
-      ]
-    };
+          }
+        ]
+      };
+    } catch (error2) {
+      return {
+        content: [{ type: "text", text: `Configuration error: ${error2.message}` }],
+        isError: true
+      };
+    }
   }
 );
 server.registerTool(
@@ -20897,9 +20943,9 @@ server.registerTool(
     })
   },
   async ({ query }) => {
-    const entrypoint = process.env.VM_INSTANCE_ENTRYPOINT || "http://localhost:8428";
+    const entrypoint = getVmEntrypoint();
     try {
-      const response = await fetch(`${entrypoint}/api/v1/query?query=${encodeURIComponent(query)}`);
+      const response = await fetchWithTimeout(`${entrypoint}/api/v1/query?query=${encodeURIComponent(query)}`);
       const data = await response.json();
       return {
         content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
@@ -20924,13 +20970,13 @@ server.registerTool(
     })
   },
   async ({ query, limit, start, end }) => {
-    const entrypoint = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
+    const entrypoint = getVlEntrypoint();
     const params = new URLSearchParams({ query });
     if (limit) params.append("limit", limit.toString());
     if (start) params.append("start", start);
     if (end) params.append("end", end);
     try {
-      const response = await fetch(`${entrypoint}/select/logsql/query?${params.toString()}`);
+      const response = await fetchWithTimeout(`${entrypoint}/select/logsql/query?${params.toString()}`);
       const text = await response.text();
       return {
         content: [{ type: "text", text }]
@@ -20952,11 +20998,11 @@ server.registerTool(
     })
   },
   async ({ query }) => {
-    const entrypoint = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
+    const entrypoint = getVlEntrypoint();
     const params = new URLSearchParams();
     if (query) params.append("query", query);
     try {
-      const response = await fetch(`${entrypoint}/select/logsql/field_names?${params.toString()}`);
+      const response = await fetchWithTimeout(`${entrypoint}/select/logsql/field_names?${params.toString()}`);
       const data = await response.json();
       return {
         content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
@@ -20980,12 +21026,12 @@ server.registerTool(
     })
   },
   async ({ field, query, limit }) => {
-    const entrypoint = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
+    const entrypoint = getVlEntrypoint();
     const params = new URLSearchParams({ field });
     if (query) params.append("query", query);
     if (limit) params.append("limit", limit.toString());
     try {
-      const response = await fetch(`${entrypoint}/select/logsql/field_values?${params.toString()}`);
+      const response = await fetchWithTimeout(`${entrypoint}/select/logsql/field_values?${params.toString()}`);
       const data = await response.json();
       return {
         content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
@@ -21010,12 +21056,12 @@ server.registerTool(
     })
   },
   async ({ query, step, start, end }) => {
-    const entrypoint = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
+    const entrypoint = getVlEntrypoint();
     const params = new URLSearchParams({ query, step });
     if (start) params.append("start", start);
     if (end) params.append("end", end);
     try {
-      const response = await fetch(`${entrypoint}/select/logsql/hits?${params.toString()}`);
+      const response = await fetchWithTimeout(`${entrypoint}/select/logsql/hits?${params.toString()}`);
       const data = await response.json();
       return {
         content: [{ type: "text", text: JSON.stringify(data, null, 2) }]
@@ -21035,9 +21081,9 @@ server.registerTool(
     inputSchema: external_exports.object({}).shape
   },
   async () => {
-    const entrypoint = process.env.VL_INSTANCE_ENTRYPOINT || "http://localhost:9428";
+    const entrypoint = getVlEntrypoint();
     try {
-      const healthResponse = await fetch(`${entrypoint}/health`);
+      const healthResponse = await fetchWithTimeout(`${entrypoint}/health`);
       const health = await healthResponse.text();
       return {
         content: [
@@ -21062,9 +21108,9 @@ server.registerTool(
     inputSchema: external_exports.object({})
   },
   async () => {
-    const entrypoint = process.env.VM_INSTANCE_ENTRYPOINT || "http://localhost:8428";
+    const entrypoint = getVmEntrypoint();
     try {
-      const response = await fetch(`${entrypoint}/api/v1/label/__name__/values`);
+      const response = await fetchWithTimeout(`${entrypoint}/api/v1/label/__name__/values`);
       const data = await response.json();
       return {
         content: [{ type: "text", text: JSON.stringify(data.data, null, 2) }]
@@ -21084,9 +21130,9 @@ server.registerTool(
     inputSchema: external_exports.object({})
   },
   async () => {
-    const entrypoint = process.env.VM_INSTANCE_ENTRYPOINT || "http://localhost:8428";
+    const entrypoint = getVmEntrypoint();
     try {
-      const response = await fetch(`${entrypoint}/api/v1/labels`);
+      const response = await fetchWithTimeout(`${entrypoint}/api/v1/labels`);
       const data = await response.json();
       return {
         content: [{ type: "text", text: JSON.stringify(data.data, null, 2) }]
@@ -21106,11 +21152,11 @@ server.registerTool(
     inputSchema: external_exports.object({})
   },
   async () => {
-    const entrypoint = process.env.VM_INSTANCE_ENTRYPOINT || "http://localhost:8428";
+    const entrypoint = getVmEntrypoint();
     try {
-      const healthResponse = await fetch(`${entrypoint}/health`);
+      const healthResponse = await fetchWithTimeout(`${entrypoint}/health`);
       const health = await healthResponse.text();
-      const statusResponse = await fetch(`${entrypoint}/api/v1/status/tsdb`);
+      const statusResponse = await fetchWithTimeout(`${entrypoint}/api/v1/status/tsdb`);
       const status = await statusResponse.json();
       return {
         content: [
