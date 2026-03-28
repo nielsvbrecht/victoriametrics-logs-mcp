@@ -9,6 +9,7 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  GEMINI_STORAGE_BACKEND: "file"
 
 jobs:
   build-and-test:
