@@ -1,3 +1,8 @@
+---
+name: troubleshooter
+description: Specialized in system-wide troubleshooting using metrics and logs.
+---
+
 # VictoriaMetrics & VictoriaLogs Troubleshooter Skill
 
 This skill focuses on diagnosing and resolving issues related to VictoriaMetrics and VictoriaLogs instances, including storage, ingestion, and query/search performance.

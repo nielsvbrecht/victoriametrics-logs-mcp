@@ -105,14 +105,16 @@ jobs:
           
           echo "Testing local extension linking"
           ./node_modules/.bin/gemini -v
-          ./node_modules/.bin/gemini extensions link "$GITHUB_WORKSPACE" --consent
-          exts=$(./node_modules/.bin/gemini extensions list -o json)
-          echo "$exts"
+          ./node_modules/.bin/gemini extensions link "$GITHUB_WORKSPACE" --consent || true
           
-          if echo "$exts" | grep -q "victoriametrics-logs-mcp"; then
+          echo "Verifying extension registry"
+          ./node_modules/.bin/gemini extensions list -o json > extensions.json || true
+          cat extensions.json
+          
+          if grep -q "victoriametrics-logs-mcp" extensions.json; then
             echo "Extension successfully linked"
           else
-            echo "Error: Extension not found in JSON list"
+            echo "Error: Extension not found in registry"
             exit 1
           fi
 
@@ -137,14 +139,18 @@ jobs:
           
           echo "Testing local extension linking"
           $BIN = ".\node_modules\.bin\gemini"
-          & $BIN -v
-          & $BIN extensions link "$env:GITHUB_WORKSPACE" --consent
-          $exts = & $BIN extensions list -o json
-          echo $exts
-          if ($exts -match "victoriametrics-logs-mcp") {
+          try { & $BIN -v } catch {}
+          try { & $BIN extensions link "$env:GITHUB_WORKSPACE" --consent } catch {}
+          
+          echo "Verifying extension registry"
+          try { & $BIN extensions list -o json | Out-File -FilePath extensions.json -Encoding utf8 } catch {}
+          $content = Get-Content extensions.json -Raw
+          echo $content
+          
+          if ($content -match "victoriametrics-logs-mcp") {
             echo "Extension successfully linked"
           } else {
-            echo "Error: Extension not found in JSON list"
+            echo "Error: Extension not found in registry"
             exit 1
           }
 

@@ -1,3 +1,8 @@
+---
+name: metrics-expert
+description: Expert in MetricsQL and system monitoring with VictoriaMetrics.
+---
+
 # MetricsQL Expert Skill
 
 This skill specializes in writing, analyzing, and optimizing **MetricsQL** (and PromQL) queries for VictoriaMetrics.

@@ -1,3 +1,8 @@
+---
+name: logs-expert
+description: Expert in writing and optimizing LogsQL queries for VictoriaLogs.
+---
+
 # LogsQL Expert Skill
 
 This skill specializes in writing, analyzing, and optimizing **LogsQL** queries for VictoriaLogs.
