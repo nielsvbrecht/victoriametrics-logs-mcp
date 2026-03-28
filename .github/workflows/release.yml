@@ -67,12 +67,14 @@ jobs:
           fi
           npm install -g @google/gemini-cli
           mkdir -p "$GEMINI_CONFIG_DIR"
-          # Initialize registry with a more complete structure
           echo '{"projects":{},"version":1}' > "$GEMINI_CONFIG_DIR/projects.json"
           echo '{"config":{},"version":1}' > "$GEMINI_CONFIG_DIR/config.json"
+          
+          # Run from a neutral directory to avoid project detection crashes
+          mkdir -p ../test-dir
+          cd ../test-dir
           gemini --version
-          # Use || true to ignore the crash at the end of link command
-          gemini extensions link . --consent || true
+          gemini extensions link "$GITHUB_WORKSPACE" --consent || true
           gemini extensions list | grep "victoriametrics-logs-mcp"
 
       - name: Test installation (Windows)
@@ -85,8 +87,12 @@ jobs:
           if (!(Test-Path $env:GEMINI_CONFIG_DIR)) { New-Item -ItemType Directory -Path $env:GEMINI_CONFIG_DIR }
           '{"projects":{},"version":1}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "projects.json") -Encoding utf8
           '{"config":{},"version":1}' | Out-File -FilePath (Join-Path $env:GEMINI_CONFIG_DIR "config.json") -Encoding utf8
+          
+          # Run from a neutral directory
+          New-Item -ItemType Directory -Path ../test-dir -Force
+          Set-Location ../test-dir
           try { gemini --version } catch {}
-          try { gemini extensions link . --consent } catch {}
+          try { gemini extensions link "$env:GITHUB_WORKSPACE" --consent } catch {}
           $exts = gemini extensions list
           if ($exts -match "victoriametrics-logs-mcp") {
             echo "Extension found"
