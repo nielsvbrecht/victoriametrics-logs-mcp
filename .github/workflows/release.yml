@@ -93,20 +93,19 @@ jobs:
             sudo apt-get update && sudo apt-get install -y libsecret-1-0
           fi
           
-          # Initialize CLI home structure
-          mkdir -p "$GEMINI_CLI_HOME/.gemini"
-          echo '{"projects":{},"version":1,"activeProjectId":null}' > "$GEMINI_CLI_HOME/.gemini/projects.json"
-          echo '{"config":{},"version":1}' > "$GEMINI_CLI_HOME/.gemini/config.json"
+          # Initialize CLI home directory
+          mkdir -p "$GEMINI_CLI_HOME"
           
-          # Install CLI locally in a temp directory
+          # Install CLI locally
           mkdir -p ../cli-dir
           cd ../cli-dir
           npm install @google/gemini-cli@0.35.2
           BIN="$(pwd)/node_modules/.bin/gemini"
           
-          echo "Testing local extension linking"
+          echo "Initializing project and linking extension"
           cd "$GITHUB_WORKSPACE"
-          $BIN -v
+          # Use CLI to initialize environment properly
+          $BIN projects new . --consent || true
           $BIN extensions link . --consent || true
           
           echo "Verifying extension registry file directly"
@@ -133,10 +132,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DEBUG: "true"
         run: |
-          $geminiDir = Join-Path $env:GEMINI_CLI_HOME ".gemini"
-          if (!(Test-Path $geminiDir)) { New-Item -ItemType Directory -Path $geminiDir }
-          '{"projects":{},"version":1,"activeProjectId":null}' | Out-File -FilePath (Join-Path $geminiDir "projects.json") -Encoding utf8
-          '{"config":{},"version":1}' | Out-File -FilePath (Join-Path $geminiDir "config.json") -Encoding utf8
+          if (!(Test-Path $env:GEMINI_CLI_HOME)) { New-Item -ItemType Directory -Path $env:GEMINI_CLI_HOME }
           
           # Install CLI locally
           New-Item -ItemType Directory -Path ../cli-dir -Force
@@ -144,12 +140,13 @@ jobs:
           npm install @google/gemini-cli@0.35.2
           $BIN = (Join-Path (Get-Location) "node_modules\.bin\gemini")
           
-          echo "Testing local extension linking"
+          echo "Initializing project and linking extension"
           Set-Location $env:GITHUB_WORKSPACE
-          try { & $BIN -v } catch {}
+          try { & $BIN projects new . --consent } catch {}
           try { & $BIN extensions link . --consent } catch {}
           
           echo "Verifying extension registry file directly"
+          $geminiDir = Join-Path $env:GEMINI_CLI_HOME ".gemini"
           $registryPath = Join-Path $geminiDir "projects.json"
           if (Test-Path $registryPath) {
             $content = Get-Content $registryPath -Raw
