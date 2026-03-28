@@ -79,10 +79,10 @@ jobs:
           mkdir -p ../test-dir
           cd ../test-dir
           
-          echo "Testing with npx @google/gemini-cli@0.35.1"
-          npx -y @google/gemini-cli@0.35.1 --version --headless
-          npx -y @google/gemini-cli@0.35.1 extensions link "$GITHUB_WORKSPACE" --consent --headless
-          npx -y @google/gemini-cli@0.35.1 extensions list --headless > extensions.txt
+          echo "Testing with npx @google/gemini-cli@0.35.2"
+          npx -y @google/gemini-cli@0.35.2 --version --headless
+          npx -y @google/gemini-cli@0.35.2 extensions link "$GITHUB_WORKSPACE" --consent --headless
+          npx -y @google/gemini-cli@0.35.2 extensions list --headless > extensions.txt
           cat extensions.txt
           
           if grep -q "victoriametrics-logs-mcp" extensions.txt; then
@@ -107,10 +107,10 @@ jobs:
           New-Item -ItemType Directory -Path ../test-dir -Force
           Set-Location ../test-dir
           
-          echo "Testing with npx @google/gemini-cli@0.35.1"
-          npx -y @google/gemini-cli@0.35.1 --version --headless
-          npx -y @google/gemini-cli@0.35.1 extensions link "$env:GITHUB_WORKSPACE" --consent --headless
-          $exts = npx -y @google/gemini-cli@0.35.1 extensions list --headless
+          echo "Testing with npx @google/gemini-cli@0.35.2"
+          npx -y @google/gemini-cli@0.35.2 --version --headless
+          npx -y @google/gemini-cli@0.35.2 extensions link "$env:GITHUB_WORKSPACE" --consent --headless
+          $exts = npx -y @google/gemini-cli@0.35.2 extensions list --headless
           echo $exts
           if ($exts -match "victoriametrics-logs-mcp") {
             echo "Extension found"
