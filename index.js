@@ -10,7 +10,7 @@ import { z } from 'zod';
 
 const server = new McpServer({
   name: 'victoriametrics-logs-mcp',
-  version: '2.1.3',
+  version: '2.1.4',
 });
 
 /**

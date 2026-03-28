@@ -90,11 +90,6 @@ jobs:
             echo "Extension not found"
             exit 1
           }
-            echo "Extension found"
-          } else {
-            echo "Extension not found"
-            exit 1
-          }
 
       - name: Package extension (Unix)
         if: runner.os != 'Windows'
