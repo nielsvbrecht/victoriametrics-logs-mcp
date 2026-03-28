@@ -8,10 +8,22 @@ on:
       - 'version.txt'
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+  build-and-test:
+    name: Build & Test (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            ext: tar.gz
+          - os: macos-latest
+            platform: darwin
+            ext: tar.gz
+          - os: windows-latest
+            platform: win32
+            ext: zip
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,15 +40,31 @@ jobs:
       - name: Build extension
         run: npm run build
 
-      - name: Test installation in gemini-cli
+      - name: Test installation (Unix)
+        if: runner.os != 'Windows'
         run: |
           npm install -g @google/gemini-cli
           gemini extensions link .
           gemini extensions list | grep "victoriametrics-logs-mcp"
 
-      - name: Package extension (darwin)
+      - name: Test installation (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          tar -czvf ${{ github.ref_name }}.darwin.victoriametrics-logs-mcp.tar.gz \
+          npm install -g @google/gemini-cli
+          gemini extensions link .
+          $exts = gemini extensions list
+          if ($exts -match "victoriametrics-logs-mcp") {
+            echo "Extension found"
+          } else {
+            echo "Extension not found"
+            exit 1
+          }
+
+      - name: Package extension (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          tar -czvf ${{ matrix.platform }}.victoriametrics-logs-mcp.tar.gz \
             gemini-extension.json \
             package.json \
             README.md \
@@ -45,36 +73,46 @@ jobs:
             commands/ \
             skills/
 
-      - name: Package extension (linux)
+      - name: Package extension (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          tar -czvf ${{ github.ref_name }}.linux.victoriametrics-logs-mcp.tar.gz \
-            gemini-extension.json \
-            package.json \
-            README.md \
-            GEMINI.md \
-            dist/ \
-            commands/ \
-            skills/
+          Compress-Archive -Path gemini-extension.json, package.json, README.md, GEMINI.md, dist, commands, skills -DestinationPath win32.victoriametrics-logs-mcp.zip
 
-      - name: Package extension (win32)
-        run: |
-          zip -r ${{ github.ref_name }}.win32.victoriametrics-logs-mcp.zip \
-            gemini-extension.json \
-            package.json \
-            README.md \
-            GEMINI.md \
-            dist/ \
-            commands/ \
-            skills/
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-artifact
+          path: |
+            *.tar.gz
+            *.zip
+
+  create-release:
+    name: Create Release
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Get version
+        id: get_version
+        run: echo "VERSION=$(cat version.txt)" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            ${{ github.ref_name }}.darwin.victoriametrics-logs-mcp.tar.gz
-            ${{ github.ref_name }}.linux.victoriametrics-logs-mcp.tar.gz
-            ${{ github.ref_name }}.win32.victoriametrics-logs-mcp.zip
+          files: artifacts/*
           generate_release_notes: true
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}', github.sha) }}
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          name: Release v${{ steps.get_version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
