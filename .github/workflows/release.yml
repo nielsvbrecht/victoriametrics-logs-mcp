@@ -63,8 +63,11 @@ jobs:
           fi
           npm install -g @google/gemini-cli
           mkdir -p ~/.gemini
-          gemini --version
-          gemini extensions link . --consent
+          # Initialize registry with empty projects object to avoid TypeErrors
+          echo '{"projects":{}}' > ~/.gemini/projects.json
+          echo '{"config":{}}' > ~/.gemini/config.json
+          gemini --version || true
+          gemini extensions link . --consent || true
           gemini extensions list | grep "victoriametrics-logs-mcp"
 
       - name: Test installation (Windows)
@@ -76,10 +79,17 @@ jobs:
           npm install -g @google/gemini-cli
           $geminiDir = [System.IO.Path]::Combine($env:USERPROFILE, ".gemini")
           if (!(Test-Path $geminiDir)) { New-Item -ItemType Directory -Path $geminiDir }
-          gemini --version
-          gemini extensions link . --consent
+          '{"projects":{}}' | Out-File -FilePath (Join-Path $geminiDir "projects.json") -Encoding utf8
+          '{"config":{}}' | Out-File -FilePath (Join-Path $geminiDir "config.json") -Encoding utf8
+          try { gemini --version } catch {}
+          try { gemini extensions link . --consent } catch {}
           $exts = gemini extensions list
           if ($exts -match "victoriametrics-logs-mcp") {
+            echo "Extension found"
+          } else {
+            echo "Extension not found"
+            exit 1
+          }
             echo "Extension found"
           } else {
             echo "Extension not found"
