@@ -10,7 +10,7 @@ on:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   GEMINI_STORAGE_BACKEND: "file"
-  GEMINI_CLI_HOME: ${{ github.workspace }}
+  GEMINI_CLI_HOME: ${{ github.workspace }}/temp_home
   GEMINI_NO_HISTORY: "true"
 
 jobs:
@@ -93,7 +93,7 @@ jobs:
             sudo apt-get update && sudo apt-get install -y libsecret-1-0
           fi
           
-          # Initialize CLI home structure
+          # Initialize CLI home structure correctly
           mkdir -p "$GEMINI_CLI_HOME/.gemini"
           echo '{"projects":{},"version":1,"activeProjectId":null}' > "$GEMINI_CLI_HOME/.gemini/projects.json"
           echo '{"config":{},"version":1}' > "$GEMINI_CLI_HOME/.gemini/config.json"
@@ -106,13 +106,13 @@ jobs:
           echo "Testing local extension linking"
           ./node_modules/.bin/gemini -v
           ./node_modules/.bin/gemini extensions link "$GITHUB_WORKSPACE" --consent
-          exts=$(./node_modules/.bin/gemini extensions list)
+          exts=$(./node_modules/.bin/gemini extensions list -o json)
           echo "$exts"
           
           if echo "$exts" | grep -q "victoriametrics-logs-mcp"; then
             echo "Extension successfully linked"
           else
-            echo "Error: Extension not found"
+            echo "Error: Extension not found in JSON list"
             exit 1
           fi
 
@@ -139,12 +139,12 @@ jobs:
           $BIN = ".\node_modules\.bin\gemini"
           & $BIN -v
           & $BIN extensions link "$env:GITHUB_WORKSPACE" --consent
-          $exts = & $BIN extensions list
+          $exts = & $BIN extensions list -o json
           echo $exts
           if ($exts -match "victoriametrics-logs-mcp") {
             echo "Extension successfully linked"
           } else {
-            echo "Extension not found"
+            echo "Error: Extension not found in JSON list"
             exit 1
           }
 
