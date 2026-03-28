@@ -100,7 +100,7 @@ jobs:
           
           echo "Testing installation from local package"
           npx -y @google/gemini-cli@0.35.2 -v
-          npx -y @google/gemini-cli@0.35.2 extensions install "./${{ matrix.platform }}.victoriametrics-logs-mcp.tar.gz" --consent
+          npx -y @google/gemini-cli@0.35.2 extensions install "$(pwd)/${{ matrix.platform }}.victoriametrics-logs-mcp.tar.gz" --consent
           npx -y @google/gemini-cli@0.35.2 extensions list > extensions.txt
           cat extensions.txt
           
@@ -126,7 +126,8 @@ jobs:
           
           echo "Testing installation from local package"
           npx -y @google/gemini-cli@0.35.2 -v
-          npx -y @google/gemini-cli@0.35.2 extensions install "./win32.victoriametrics-logs-mcp.zip" --consent
+          $packagePath = Join-Path (Get-Location) "win32.victoriametrics-logs-mcp.zip"
+          npx -y @google/gemini-cli@0.35.2 extensions install "$packagePath" --consent
           $exts = npx -y @google/gemini-cli@0.35.2 extensions list
           echo $exts
           if ($exts -match "victoriametrics-logs-mcp") {
