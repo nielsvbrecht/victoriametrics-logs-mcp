@@ -102,10 +102,12 @@ jobs:
           mkdir -p ../cli-dir
           cd ../cli-dir
           npm install @google/gemini-cli@0.35.2
+          BIN="$(pwd)/node_modules/.bin/gemini"
           
           echo "Testing local extension linking"
-          ./node_modules/.bin/gemini -v
-          ./node_modules/.bin/gemini extensions link "$GITHUB_WORKSPACE" --consent || true
+          cd "$GITHUB_WORKSPACE"
+          $BIN -v
+          $BIN extensions link . --consent || true
           
           echo "Verifying extension registry file directly"
           REGISTRY="$GEMINI_CLI_HOME/.gemini/projects.json"
@@ -140,11 +142,12 @@ jobs:
           New-Item -ItemType Directory -Path ../cli-dir -Force
           Set-Location ../cli-dir
           npm install @google/gemini-cli@0.35.2
+          $BIN = (Join-Path (Get-Location) "node_modules\.bin\gemini")
           
           echo "Testing local extension linking"
-          $BIN = ".\node_modules\.bin\gemini"
+          Set-Location $env:GITHUB_WORKSPACE
           try { & $BIN -v } catch {}
-          try { & $BIN extensions link "$env:GITHUB_WORKSPACE" --consent } catch {}
+          try { & $BIN extensions link . --consent } catch {}
           
           echo "Verifying extension registry file directly"
           $registryPath = Join-Path $geminiDir "projects.json"
