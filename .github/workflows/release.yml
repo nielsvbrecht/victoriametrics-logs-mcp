@@ -69,7 +69,7 @@ jobs:
           if [ "${{ runner.os }}" == "Linux" ]; then
             sudo apt-get update && sudo apt-get install -y libsecret-1-0
           fi
-          npm install -g @google/gemini-cli
+          npm install -g @google/gemini-cli@latest
           mkdir -p "$GEMINI_CONFIG_DIR"
           echo '{"projects":{},"version":1,"activeProjectId":null}' > "$GEMINI_CONFIG_DIR/projects.json"
           echo '{"config":{},"version":1}' > "$GEMINI_CONFIG_DIR/config.json"
@@ -77,10 +77,10 @@ jobs:
           # Run from a neutral directory to avoid project detection crashes
           mkdir -p ../test-dir
           cd ../test-dir
-          gemini --version || true
-          gemini extensions link "$GITHUB_WORKSPACE" --consent || true
+          gemini --version --headless || true
+          gemini extensions link "$GITHUB_WORKSPACE" --consent --headless || true
           # Capture list output even if it crashes at the end
-          gemini extensions list > extensions.txt || true
+          gemini extensions list --headless > extensions.txt || true
           cat extensions.txt
           grep "victoriametrics-logs-mcp" extensions.txt
 
@@ -98,10 +98,10 @@ jobs:
           # Run from a neutral directory
           New-Item -ItemType Directory -Path ../test-dir -Force
           Set-Location ../test-dir
-          try { gemini --version } catch {}
-          try { gemini extensions link "$env:GITHUB_WORKSPACE" --consent } catch {}
+          try { gemini --version --headless } catch {}
+          try { gemini extensions link "$env:GITHUB_WORKSPACE" --consent --headless } catch {}
           $exts = ""
-          try { $exts = gemini extensions list } catch {}
+          try { $exts = gemini extensions list --headless } catch {}
           echo $exts
           if ($exts -match "victoriametrics-logs-mcp") {
             echo "Extension found"
