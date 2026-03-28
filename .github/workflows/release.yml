@@ -23,9 +23,9 @@ jobs:
           - os: ubuntu-latest
             platform: linux
             ext: tar.gz
-          # - os: macos-latest
-          #   platform: darwin
-          #   ext: tar.gz
+          - os: macos-latest
+            platform: darwin
+            ext: tar.gz
           - os: windows-latest
             platform: win32
             ext: zip
