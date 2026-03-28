@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.4] - 2026-03-28
+
+### Added
+- **Changelog Validation**: CI now fails if `version.txt` is updated without a corresponding entry in `CHANGELOG.md`.
+
+## [2.0.3] - 2026-03-28
+
+### Added
+- **Multi-Platform CI**: Added matrix builds for Ubuntu, macOS, and Windows.
+- **Cross-Platform Verification**: Tests installation in `gemini-cli` on all OSes.
+
+## [2.0.2] - 2026-03-28
+
+### Added
+- **CI Installation Test**: Automatic verification that the extension links correctly in `gemini-cli`.
+
+## [2.0.1] - 2026-03-28
+
+### Fixed
+- **CI Trigger**: Fixed GitHub Actions push triggers for `version.txt`.
+
 ## [2.0.0] - 2026-03-28
 
 ### Added

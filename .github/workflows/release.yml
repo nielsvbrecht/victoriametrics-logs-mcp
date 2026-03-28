@@ -37,6 +37,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Validate Changelog
+        run: |
+          VERSION=$(cat version.txt)
+          if ! grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            echo "Error: Version $VERSION not found in CHANGELOG.md"
+            exit 1
+          fi
+
       - name: Build extension
         run: npm run build
 
