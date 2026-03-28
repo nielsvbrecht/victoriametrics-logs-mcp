@@ -19,6 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     environment: gemini
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -45,6 +46,8 @@ jobs:
         run: npm install
 
       - name: Run Unit Tests
+        id: unit_tests
+        continue-on-error: true
         run: npm test
 
       - name: Validate Changelog
@@ -61,6 +64,8 @@ jobs:
 
       - name: Test installation (Unix)
         if: runner.os != 'Windows'
+        id: install_unix
+        continue-on-error: true
         shell: bash
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -76,7 +81,7 @@ jobs:
           echo '{"config":{},"version":1}' > "$GEMINI_CONFIG_DIR/config.json"
           
           echo "Testing with npx @google/gemini-cli@0.35.2"
-          # Use -p "" for non-interactive mode instead of --headless
+          # Use -v for diagnostic check
           npx -y @google/gemini-cli@0.35.2 -v
           npx -y @google/gemini-cli@0.35.2 extensions link . --consent
           npx -y @google/gemini-cli@0.35.2 extensions list > extensions.txt
@@ -91,6 +96,8 @@ jobs:
 
       - name: Test installation (Windows)
         if: runner.os == 'Windows'
+        id: install_win
+        continue-on-error: true
         shell: pwsh
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -111,6 +118,19 @@ jobs:
             echo "Extension not found"
             exit 1
           }
+
+      - name: Check Overall Status
+        shell: bash
+        run: |
+          # If any test failed, we want to fail the job at the end
+          UNIT_FAILED="${{ steps.unit_tests.outcome == 'failure' }}"
+          INSTALL_UNIX_FAILED="${{ steps.install_unix.outcome == 'failure' }}"
+          INSTALL_WIN_FAILED="${{ steps.install_win.outcome == 'failure' }}"
+          
+          if [ "$UNIT_FAILED" == "true" ] || [ "$INSTALL_UNIX_FAILED" == "true" ] || [ "$INSTALL_WIN_FAILED" == "true" ]; then
+            echo "One or more tests failed."
+            exit 1
+          fi
 
       - name: Package extension (Unix)
         if: runner.os != 'Windows'
