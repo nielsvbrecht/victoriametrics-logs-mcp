@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.4] - 2026-03-28
+
+### Changed
+- **CI Stability**: Switched to a local `npm install` for the Gemini CLI within a temporary directory during CI. This avoids global path resolution issues and `Cannot find module` errors encountered on macOS and Windows runners.
+
 ## [2.3.3] - 2026-03-28
 
 ### Fixed

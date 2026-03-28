@@ -98,16 +98,19 @@ jobs:
           echo '{"projects":{},"version":1,"activeProjectId":null}' > "$GEMINI_CLI_HOME/projects.json"
           echo '{"config":{},"version":1}' > "$GEMINI_CLI_HOME/config.json"
           
-          # Install CLI globally
-          npm install -g @google/gemini-cli@0.35.2
+          # Install CLI locally in a temp directory to avoid conflicts
+          mkdir -p ../cli-dir
+          cd ../cli-dir
+          npm install @google/gemini-cli@0.35.2
+          BIN="./node_modules/.bin/gemini"
           
           echo "Testing installation from local package"
-          gemini -v
-          gemini extensions install "$(pwd)/${{ matrix.platform }}.victoriametrics-logs-mcp.tar.gz" --consent
-          gemini extensions list > extensions.txt
-          cat extensions.txt
+          $BIN -v
+          $BIN extensions install "$GITHUB_WORKSPACE/${{ matrix.platform }}.victoriametrics-logs-mcp.tar.gz" --consent
+          exts=$($BIN extensions list)
+          echo "$exts"
           
-          if grep -q "victoriametrics-logs-mcp" extensions.txt; then
+          if echo "$exts" | grep -q "victoriametrics-logs-mcp"; then
             echo "Extension successfully installed"
           else
             echo "Error: Extension not found"
@@ -127,14 +130,17 @@ jobs:
           '{"projects":{},"version":1,"activeProjectId":null}' | Out-File -FilePath (Join-Path $env:GEMINI_CLI_HOME "projects.json") -Encoding utf8
           '{"config":{},"version":1}' | Out-File -FilePath (Join-Path $env:GEMINI_CLI_HOME "config.json") -Encoding utf8
           
-          # Install CLI globally
-          npm install -g @google/gemini-cli@0.35.2
+          # Install CLI locally
+          New-Item -ItemType Directory -Path ../cli-dir -Force
+          Set-Location ../cli-dir
+          npm install @google/gemini-cli@0.35.2
+          $BIN = ".\node_modules\.bin\gemini"
           
           echo "Testing installation from local package"
-          gemini -v
-          $packagePath = Join-Path (Get-Location) "win32.victoriametrics-logs-mcp.zip"
-          gemini extensions install "$packagePath" --consent
-          $exts = gemini extensions list
+          & $BIN -v
+          $packagePath = Join-Path $env:GITHUB_WORKSPACE "win32.victoriametrics-logs-mcp.zip"
+          & $BIN extensions install "$packagePath" --consent
+          $exts = & $BIN extensions list
           echo $exts
           if ($exts -match "victoriametrics-logs-mcp") {
             echo "Extension installed successfully"
