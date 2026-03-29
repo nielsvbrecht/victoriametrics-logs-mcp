@@ -87,3 +87,9 @@ npm test
 - `skills/`: Specialized agent expertise.
 - `commands/`: Custom slash command definitions.
 - `GEMINI.md`: Core instruction set.
+
+## License
+
+This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details.
+
+This project includes attributions to third-party software - see the [NOTICE](NOTICE) file for details.
