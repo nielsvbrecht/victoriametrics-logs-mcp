@@ -8,7 +8,6 @@ on:
       - 'version.txt'
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   GEMINI_STORAGE_BACKEND: "file"
   GEMINI_CLI_HOME: ${{ github.workspace }}/temp_home
   GEMINI_NO_HISTORY: "true"
