@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.3] - 2026-03-28
+
+### Fixed
+- **CI Stability (Windows)**: Refined the Windows registry verification by pre-initializing the `projects.json` with an absolute, JSON-escaped project path. Added a delay after linking to ensure the registry file is correctly persisted on the Windows filesystem.
+
 ## [2.4.2] - 2026-03-28
 
 ### Changed

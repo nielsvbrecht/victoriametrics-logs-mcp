@@ -132,7 +132,22 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DEBUG: "true"
         run: |
-          if (!(Test-Path $env:GEMINI_CLI_HOME)) { New-Item -ItemType Directory -Path $env:GEMINI_CLI_HOME }
+          $geminiDir = Join-Path $env:GEMINI_CLI_HOME ".gemini"
+          if (!(Test-Path $geminiDir)) { New-Item -ItemType Directory -Path $geminiDir }
+          
+          # Use absolute path for the project and escape it for JSON
+          $projectPath = $env:GITHUB_WORKSPACE.Replace("\", "\\")
+          $projectsJson = @"
+          {
+            "projects": {
+              "$projectPath": "victoriametrics-logs-mcp"
+            },
+            "version": 1,
+            "activeProjectId": "$projectPath"
+          }
+          "@
+          $projectsJson | Out-File -FilePath (Join-Path $geminiDir "projects.json") -Encoding utf8
+          '{"config":{},"version":1}' | Out-File -FilePath (Join-Path $geminiDir "config.json") -Encoding utf8
           
           # Install CLI locally
           New-Item -ItemType Directory -Path ../cli-dir -Force
@@ -140,17 +155,19 @@ jobs:
           npm install @google/gemini-cli@0.35.2
           $BIN = (Join-Path (Get-Location) "node_modules\.bin\gemini")
           
-          echo "Initializing project and linking extension"
+          echo "Linking extension from workspace"
           Set-Location $env:GITHUB_WORKSPACE
-          try { & $BIN projects new . --consent } catch {}
           try { & $BIN extensions link . --consent } catch {}
           
+          # Small delay to ensure disk flush
+          Start-Sleep -Seconds 2
+          
           echo "Verifying extension registry file directly"
-          $geminiDir = Join-Path $env:GEMINI_CLI_HOME ".gemini"
           $registryPath = Join-Path $geminiDir "projects.json"
           if (Test-Path $registryPath) {
             $content = Get-Content $registryPath -Raw
             echo $content
+            # Check for the extension name specifically, ignoring path formatting
             if ($content -match "victoriametrics-logs-mcp") {
               echo "Extension successfully registered in projects.json"
             } else {
